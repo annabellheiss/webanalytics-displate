@@ -1,45 +1,40 @@
-// Google Tag Manager mit Einwilligung (Consent): vor dem Klick auf "Akzeptieren" wird nichts geladen oder gesendet.
-const GTM_ID = "GTM-W2SFBTR2";
+// Amplitude mit Einwilligung (Consent): vor dem Klick auf "Akzeptieren" wird nichts geladen oder gesendet.
+const AMPLITUDE_KEY = "27faa9fe3582a214db7c94655cbdb6a3";
 const KEY = "displate_consent"; // "granted" oder "denied"
 let queue = [];
+let bereit = false; // true, sobald Amplitude geladen ist
 
-window.dataLayer = window.dataLayer || [];
-function gtag() {
-  dataLayer.push(arguments);
-}
-
-function loadGTM() {
-  // Consent standardmäßig auf denied, dann auf granted setzen
-  gtag("consent", "default", {
-    analytics_storage: "denied",
-    ad_storage: "denied",
-    ad_user_data: "denied",
-    ad_personalization: "denied"
-  });
-  gtag("consent", "update", { analytics_storage: "granted" });
-
-  // Standard-Code von GTM
-  dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+function loadAmplitude() {
   const script = document.createElement("script");
-  script.async = true;
-  script.src = "https://www.googletagmanager.com/gtm.js?id=" + GTM_ID;
-  document.head.appendChild(script);
+  script.src = "https://cdn.amplitude.com/script/" + AMPLITUDE_KEY + ".js";
 
-  // Events, die vor dem Consent passiert sind, jetzt senden
-  queue.forEach(e => dataLayer.push(e));
-  queue = [];
+  script.onload = () => {
+    window.amplitude.add(window.sessionReplay.plugin({ sampleRate: 1 }));
+    window.amplitude.init(AMPLITUDE_KEY, {
+      fetchRemoteConfig: true,
+      autocapture: true,
+      trackingOptions: { ipAddress: false } // IP-Adresse nicht speichern
+    });
+    bereit = true;
+
+    // Events, die vor dem Laden passiert sind, jetzt senden
+    queue.forEach(e => window.amplitude.track(e[0], e[1]));
+    queue = [];
+  };
+
+  document.head.appendChild(script);
 }
 
-// Events senden: nur mit Einwilligung. Solange noch nicht entschieden wurde, warten sie in der Warteschlange.
+// Events senden: nur mit Einwilligung. Solange noch nicht entschieden oder geladen wurde, warten sie in der Warteschlange.
 function track(name, params) {
-  const eintrag = Object.assign({ event: name }, params);
+  params = params || {};
   const c = localStorage.getItem(KEY);
 
-  if (c === "granted") {
+  if (c === "granted" && bereit) {
     console.log("Event:", name, params);
-    dataLayer.push(eintrag);
-  } else if (c === null) {
-    queue.push(eintrag);
+    window.amplitude.track(name, params);
+  } else if (c === "granted" || c === null) {
+    queue.push([name, params]);
   }
 }
 
@@ -47,7 +42,7 @@ function decide(value) {
   localStorage.setItem(KEY, value);
   document.getElementById("consent").hidden = true;
   if (value === "granted") {
-    loadGTM();
+    loadAmplitude();
   } else {
     queue = [];
   }
@@ -58,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const c = localStorage.getItem(KEY);
 
   if (c === "granted") {
-    loadGTM();
+    loadAmplitude();
   } else if (c === null) {
     banner.hidden = false;
   }
