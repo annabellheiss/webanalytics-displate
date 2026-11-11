@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="de"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Displate Prototyp</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header>
+    <span class="logo">DISPLATE</span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="produkt.html">Poster</a>
+    <span id="cart" style="margin-left:20px">Warenkorb: 0</span>
+  </nav>
+  </header>
+
+  <main>
+
+    <section class="produkt">
+      <img id="poster" src="poster.svg" alt="Poster Sunset Peaks">
+
+      <div>
+        <h1>Sunset Peaks</h1>
+        <p>Metall-Poster mit Magnet-Befestigung. Das Motiv ist ein eigener Entwurf für diesen Prototyp.</p>
+        <strong>Größe</strong>
+        <div class="opt" id="size">
+          <label><input type="radio" name="size" value="S" data-price="34" checked>S (32 x 45 cm)</label>
+          <label><input type="radio" name="size" value="M" data-price="54">M (48 x 68 cm)</label>
+          <label><input type="radio" name="size" value="L" data-price="94">L (67 x 95 cm)</label>
+        </div>
+
+        <strong>Finish</strong>
+        <div class="opt" id="finish">
+          <label><input type="radio" name="finish" value="matt" checked>matt</label>
+          <label><input type="radio" name="finish" value="glänzend">glänzend</label>
+        </div>
+        <div class="price" id="price">34 €</div>
+        <button class="btn" id="add">In den Warenkorb</button>
+      </div>
+
+    </section>
+
+    <section class="details">
+      <h2>Über dieses Poster</h2>
+      <p>Sunset Peaks zeigt eine Berglandschaft im Abendlicht. Die Farben gehen weich ineinander über und das Motiv wirkt auf einer hellen Wand genauso gut wie auf einer dunklen. Es passt in ein Wohnzimmer, ein Gaming-Zimmer oder ins Büro.</p>
+
+      <h2>Material und Befestigung</h2>
+      <p>Das Poster besteht aus Metall und ist dadurch stabiler als Papier. Es knickt nicht und rollt sich nicht ein. Befestigt wird es mit Magneten, du musst also keine Löcher bohren oder kleben. Wenn du irgendwann ein neues Motiv willst, nimmst du es einfach ab und hängst ein anderes auf.</p>
+
+      <h2>Größe und Finish</h2>
+      <p>Du kannst zwischen drei Größen wählen. Für eine kleine Wand oder ein Regal passt S, für das Sofa oder den Schreibtisch M, und L ist ein echter Blickfang für eine freie Wand. Beim Finish hast du die Wahl zwischen matt und glänzend. Matt spiegelt kaum und wirkt ruhig. Glänzend macht die Farben kräftiger, spiegelt aber bei viel Licht mehr.</p>
+
+      <h2>Ein Geschenk für Fans</h2>
+      <p>Das Poster eignet sich auch als Geschenk für Freunde, die Gaming, Filme oder Serien lieben. Du kannst es mit dem gewählten Finish bestellen und der Beschenkte muss nur noch einen Platz an der Wand finden.</p>
+
+      <h2>Pflege</h2>
+      <p>Um das Poster sauber zu halten, reicht es, ab und zu mit einem weichen, trockenen Tuch darüber zu wischen. So bleiben die Farben schön und es gibt keine Kratzer. Hänge das Poster am besten nicht direkt neben eine Heizung oder an eine Stelle mit dauerhaft starker Sonne, damit es lange so aussieht wie am ersten Tag.</p>
+    </section>
+  </main>
+
+  <footer>&copy; Heiß Annabell, Lösch Laetitia, Posseth Elias, Ramdawon Jessica, 2026
+    <br>
+    <button id="reset">Cookie-Einstellungen ändern</button>
+  </footer>
+
+  <div class="sticky" id="sticky">
+    <img src="poster.svg" alt="">
+    <div class="info"><strong>Sunset Peaks</strong><br><span id="sticky-price">34 €</span></div>
+    <button class="btn" id="sticky-add">In den Warenkorb</button>
+  </div>
+
+  <div id="consent" hidden role="dialog" aria-label="Cookie-Einwilligung">
+    <p>Wir möchten anonym messen, wie diese Seite genutzt wird (Google Analytics). Dafür brauchen wir deine Einwilligung. Ohne Zustimmung wird nichts gemessen.</p>
+    <button class="btn" id="accept">Akzeptieren</button> <button class="btn light" id="reject" style="color:#fff;border-color:#fff">Ablehnen</button>
+  </div>
+
+  <script src="tracking.js"></script>
+
+  <script>
+  let anzahl = 0;
+  const el = id => document.getElementById(id);
+  const wert = n => document.querySelector('input[name="' + n + '"]:checked');
+  const itemParams = () => ({ item_name: "Sunset Peaks", size: wert("size").value, finish: wert("finish").value, value: Number(wert("size").dataset.price), currency: "EUR" });
+
+  // Preis aktualisieren
+  function preis(){ const p = wert("size").dataset.price + " €"; el("price").textContent = p; el("sticky-price").textContent = p; }
+  document.querySelectorAll("input").forEach(i => i.addEventListener("change", preis));
+
+  // Event view_item: Produktseite wurde aufgerufen (Basis für Product Page Views)
+  track("view_item", itemParams());
+
+  // Event image_load_time: Ladezeit des Produktbilds in Millisekunden
+  function messeBild(){
+    const r = performance.getEntriesByName(new URL("poster.svg", location.href).href)[0];
+    track("image_load_time", { image_name: "poster.svg", load_time_ms: Math.round(r ? r.duration : performance.now()) });
+  }
+  const bild = el("poster");
+  if (bild.complete) messeBild(); else bild.addEventListener("load", messeBild);
+
+  // Event add_to_cart: Klick auf den Hauptbutton
+  function inWarenkorb(){ anzahl++; el("cart").textContent = "Warenkorb: " + anzahl; }
+  el("add").addEventListener("click", () => { inWarenkorb(); track("add_to_cart", itemParams()); });
+
+  // Event sticky_bar_add_to_cart: Klick auf den Button in der Sticky-Leiste
+  el("sticky-add").addEventListener("click", () => { inWarenkorb(); track("sticky_bar_add_to_cart", itemParams()); });
+
+  // Sticky-Leiste erscheint, sobald der Hauptbutton nicht mehr sichtbar ist
+  new IntersectionObserver(([e]) => el("sticky").classList.toggle("show", !e.isIntersecting)).observe(el("add"));
+  </script>
+  </body>
+
+</html>

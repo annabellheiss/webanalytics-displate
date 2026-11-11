@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="de"><head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Displate Prototyp</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header><span class="logo">DISPLATE</span>
+    <nav><a href="index.html">Home</a><a href="produkt.html">Poster</a></nav></header>
+<main>
+
+    <section class="hero">
+        <div>
+            <h1>Metall-Poster für deine Leidenschaft</h1>
+            <p>Hält mit Magneten an der Wand und ist langlebig genug für ein Leben lang intensives Starren.</p>
+            <a class="btn" id="hero-cta" href="produkt.html">Poster ansehen</a>
+        </div>
+        <img src="poster.svg" alt="Poster mit Sonnenuntergang über Bergen">
+    </section>
+
+    <h2>Beliebte Motive</h2>
+    <div class="grid">
+        <a href="produkt.html" data-motiv="Sunset Peaks"><img src="poster.svg" alt="Sunset Peaks"><p>Sunset Peaks</p></a>
+        <a href="produkt.html" data-motiv="Night Peaks"><img src="poster.svg" alt="Night Peaks" style="filter:hue-rotate(120deg)"><p>Night Peaks</p></a>
+        <a href="produkt.html" data-motiv="Neon Peaks"><img src="poster.svg" alt="Neon Peaks" style="filter:hue-rotate(260deg)"><p>Neon Peaks</p></a>
+    </div>
+
+</main>
+
+<footer>&copy; Heiß Annabell, Lösch Laetitia, Posseth Elias, Ramdawon Jessica, 2026
+    <br>
+    <button id="reset">Cookie-Einstellungen ändern</button></footer>
+
+<div id="consent" hidden role="dialog" aria-label="Cookie-Einwilligung">
+    <p>Wir möchten anonym messen, wie diese Seite genutzt wird (Google Analytics). Dafür brauchen wir deine Einwilligung. Ohne Zustimmung wird nichts gemessen.</p>
+    <button class="btn" id="accept">Akzeptieren</button> <button class="btn light" id="reject" style="color:#fff;border-color:#fff">Ablehnen</button>
+</div>
+
+<script src="tracking.js"></script>
+<script>
+    // Event cta_click: Klick auf Button oder Motiv der Startseite
+    document.querySelectorAll("#hero-cta, .grid a").forEach(el => {
+        el.addEventListener("click", () => track("cta_click", { cta_name: el.dataset.motiv || "hero_poster_ansehen", page: "startseite" }));
+    });
+</script>
+</body></html>
